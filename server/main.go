@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	_ "net/http/pprof"
 	"os/signal"
 	"runtime"
 	"strconv"
@@ -61,11 +62,18 @@ func MakeUsers(count int) {
 
 func main() {
 	go func() {
-		_ = http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = http.ListenAndServe("localhost:6060", nil)
+	}()
+
+	go func() {
+		err := http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userCount, _ := strconv.Atoi(r.URL.Query().Get("cnt"))
 			MakeUsers(userCount)
 			w.WriteHeader(http.StatusOK)
 		}))
+		if err != nil {
+			panic(err)
+		}
 	}()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
