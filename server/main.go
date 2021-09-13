@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
-	"sync"
 	"syscall"
 )
 
@@ -50,21 +49,9 @@ var userRepo = &UserRepository{}
 // Make users function -------------------------------------------------------------------------------------------------
 
 func MakeUsers(count int) {
-	pool := sync.Pool{New: func() interface{} {
-		groups := make([]GroupID, 2)
-		return &groups
-	}}
-
 	for i := 0; i < count; i++ {
-		user := NewUser()
-		user.ID = userRepo.NextID()
-		groups := pool.Get().(*[]GroupID)
-		(*groups)[0] = GroupGuest
-		(*groups)[1] = GroupUser
-		user.Groups = *groups
-
+		user := &User{ID: userRepo.NextID(), Groups: []GroupID{GroupGuest, GroupUser}}
 		userRepo.persists(user)
-		pool.Put(groups)
 	}
 }
 
