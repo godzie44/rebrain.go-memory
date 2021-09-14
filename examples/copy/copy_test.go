@@ -1,4 +1,4 @@
-package examples
+package copy
 
 import (
 	"fmt"
